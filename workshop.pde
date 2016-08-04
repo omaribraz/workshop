@@ -48,6 +48,7 @@ void setup() {
   smooth();
   flock = new Flock();
   cam = new PeasyCam(this, 2000, 2000, 0, 3000);
+  perspective();
   obj = loadShape("data/"+"drone2.obj");
   obj.scale(.5);
 

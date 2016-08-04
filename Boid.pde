@@ -18,6 +18,7 @@ class Boid {
   void run(ArrayList<Boid> boids) {
     flock(boids);
     if (frameCount%1==0) trail();
+    if (frameCount%3==0) Print();
     update();
     borders();
     render();
@@ -39,7 +40,7 @@ class Boid {
     //ali.scaleSelf(0.6);
     // coh.scaleSelf(0.1);
     //stig.scaleSelf(0.5);
-    wan.scaleSelf(3.0);
+    wan.scaleSelf(9.0);
 
 
 
@@ -71,6 +72,11 @@ class Boid {
   void trail() {
     trail tr = new trail(pos.copy(), vel.copy());
     flock.addTrail(tr);
+  }
+  
+   void Print() {
+    printed tr = new printed(pos.copy(), vel.copy());
+    flock.addPrint(tr);
   }
 
   void render() {
@@ -182,7 +188,7 @@ class Boid {
 
 
   Vec3D wander() {
-    float wanderR = 16;      
+    float wanderR = 70;      
     float wanderD = 60;       
     float change = 60.25;
     float wandertheta = 0;
