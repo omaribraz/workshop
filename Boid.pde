@@ -11,7 +11,7 @@ class Boid {
     vel = new Vec3D(random(TWO_PI), random(TWO_PI), random(TWO_PI));
     pos = new Vec3D(x, y, z);
     r = 7.0;
-    maxspeed = 2;
+    maxspeed = 10;
     maxforce = 0.07;
   }
 
@@ -29,20 +29,25 @@ class Boid {
 
 
   void flock(ArrayList<Boid> boids) {
-    Vec3D sep = separate(boids);   
-    Vec3D ali = align(boids);      
-    Vec3D coh = cohesion(boids);   
+    //Vec3D sep = separate(boids);   
+    //Vec3D ali = align(boids);      
+    //Vec3D coh = cohesion(boids);
+    Vec3D wan = wander();
     //Vec3D stig = seektrail(flock.trailPop);
 
-    sep.scaleSelf(3.0);
-    ali.scaleSelf(0.6);
-    coh.scaleSelf(0.1);
+    //sep.scaleSelf(3.0);
+    //ali.scaleSelf(0.6);
+    // coh.scaleSelf(0.1);
     //stig.scaleSelf(0.5);
+    wan.scaleSelf(3.0);
 
-    applyForce(sep);
-    applyForce(ali);
-    applyForce(coh);
+
+
+    //applyForce(sep);
+    //applyForce(ali);
+    //applyForce(coh);
     //applyForce(stig);
+    applyForce(wan);
   }
 
 
@@ -75,7 +80,8 @@ class Boid {
     pushMatrix();
     translate(pos.x, pos.y, pos.z);
     rotate(theta);
-    obj.setFill(color(255, 255, 255));
+    lights();
+    obj.setFill(color(250, 250, 250));
     obj.setStroke(100);
     obj.scale(1);
     shape(obj);
@@ -174,6 +180,22 @@ class Boid {
     return sum;
   }
 
+
+  Vec3D wander() {
+    float wanderR = 16;      
+    float wanderD = 60;       
+    float change = 60.25;
+    float wandertheta = 0;
+    wandertheta += random(-change, change);    
+    Vec3D circleloc = vel.copy();
+    circleloc.normalize();
+    circleloc.scaleSelf(wanderD);  
+    circleloc.addSelf(pos);   
+    Vec3D circleOffSet = new Vec3D(wanderR*cos(wandertheta), wanderR*sin(wandertheta), 0);
+    circleOffSet.addSelf(circleloc);
+    return seek(circleOffSet);
+  }
+
   boolean inView(Vec3D target, float angle) {
     boolean resultBool; 
     Vec3D vec = target.copy().subSelf(pos.copy());
@@ -189,24 +211,24 @@ class Boid {
 
   // Wraparound
   void borders() {
-    if (pos.x < xminint) vel.scaleSelf(-1);
-    if (pos.y < yminint) vel.scaleSelf(-1);
-    if (pos.x > xmaxint) vel.scaleSelf(-1);
-    if (pos.y > ymaxint) vel.scaleSelf(-1);
-    if (pos.z > 800) vel.scaleSelf(-1);
+    if (pos.x < 0) vel.scaleSelf(-1);
+    if (pos.y < 0) vel.scaleSelf(-1);
+    if (pos.x > 4000) vel.scaleSelf(-1);
+    if (pos.y > 4000) vel.scaleSelf(-1);
+    if (pos.z >2000) vel.scaleSelf(-1);
 
-    if (pos.x < xminint) pos.x = xminint;
-    if (pos.y < yminint) pos.y = yminint;
-    if (pos.x > xmaxint) pos.x = xmaxint;
-    if (pos.y > ymaxint) pos.y = ymaxint;
-    if (pos.z < zmaxint+4) {
+    if (pos.x < 0) pos.x = 0;
+    if (pos.y < 0) pos.y = 0;
+    if (pos.x > 4000) pos.x = 4000;
+    if (pos.y > 4000) pos.y = 4000;
+    if (pos.z < zmaxint+40) {
       WB_Point tpos = new WB_Point(pos.copy().x, pos.copy().y, pos.copy().z);
       WB_Coord ptonmesh = mesh.getClosestPoint(tpos, vertexTree);
-      if (pos.z < ptonmesh.zf()+4) {
+      if (pos.z < ptonmesh.zf()+40) {
         vel.scaleSelf(-1);
       }
-      if (pos.z < ptonmesh.zf()+4) pos.z = ptonmesh.zf()+4;
+      if (pos.z < ptonmesh.zf()+40) pos.z = ptonmesh.zf()+40;
     }
-    if (pos.z > 800) pos.z = 800;
+    if (pos.z > 2000) pos.z = 2000;
   }
 }

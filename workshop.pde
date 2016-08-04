@@ -47,14 +47,14 @@ void setup() {
   size(1400, 800, P3D);
   smooth();
   flock = new Flock();
-  cam = new PeasyCam(this, 750, 750, 0, 2200);
-  obj = loadShape("data/"+"drone.obj");
-  obj.scale(3);
+  cam = new PeasyCam(this, 2000, 2000, 0, 3000);
+  obj = loadShape("data/"+"drone2.obj");
+  obj.scale(.5);
 
   meshrun();
 
-  for (int i = 0; i <100; i++) {
-    flock.addBoid(new Boid(random(0, 1500), random(0, 1500), random(800/2-350, 800/2+350)));
+  for (int i = 0; i <1; i++) {
+    flock.addBoid(new Boid(0, 0, 70));
   }
 }
 

@@ -1,5 +1,6 @@
 void meshrun() {
-  mesh = new HEC_FromOBJFile(sketchPath("data/"+"mesh3.obj")).create();
+  
+  mesh = new HEC_FromOBJFile(sketchPath("data/"+"dome.obj")).create();
   vertexTree = mesh.getVertexTree();
   int novert = mesh.getNumberOfVertices();
 
