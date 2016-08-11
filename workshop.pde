@@ -40,8 +40,13 @@ ArrayList xMax = new ArrayList();
 ArrayList yMax = new ArrayList();
 ArrayList zMax = new ArrayList();
 ArrayList  meshpts= new ArrayList();
+ArrayList attpointsList = new ArrayList();
+ArrayList nodePop;
 
 Flock flock;
+
+int nodetp = 3;
+int nodebt = 2;
 
 void setup() {
   size(1400, 800, P3D);
@@ -55,13 +60,14 @@ void setup() {
   meshrun();
 
   for (int i = 0; i <1; i++) {
-    flock.addBoid(new Boid(0, 0, 70));
+    flock.addBoid(new Boid(0, 0, 70,5));
   }
 }
 
 void draw() {
   background(0);
   flock.run();
+
 
 
   pushMatrix();
@@ -72,4 +78,22 @@ void draw() {
   lights();
   render.drawFaces(mesh);
   popMatrix();
+  
+
+
+  for (int i = 0; i < nodePop.size(); i++) {
+    node t = (node) nodePop.get(i); 
+    t.update();
+  }
+}
+
+void readText() {
+  String[] attptList = loadStrings("geo.txt");
+  for (int i = attptList.length-1; i >= 0; i--) {
+    float point[] = float(split(attptList[i], ','));
+    if (point.length==3) {
+      Vec3D Temp_PT = new Vec3D(point[0], point[1], point[2]);
+      attpointsList.add(Temp_PT);
+    }
+  }
 }

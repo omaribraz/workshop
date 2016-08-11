@@ -32,4 +32,15 @@ void meshrun() {
   yMax.clear();
   zMax.clear();
   
+  nodePop = new ArrayList();
+  
+    readText();
+  
+  
+    for (int i = 0; i<attpointsList.size(); i++) { 
+    Vec3D    p = (Vec3D) attpointsList.get(i);
+    node n1 = new node(p, 3);
+    nodePop.add(n1);
+  }
+  
 }

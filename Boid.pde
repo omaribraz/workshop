@@ -4,21 +4,28 @@ class Boid {
   Vec3D acc;
   float r;
   float maxforce;   
-  float maxspeed;  
+  float maxspeed;
+  int agentno;
+  int type;
 
-  Boid(float x, float y, float z) {
+  int branchCntr;
+  boolean isNode = false;
+  boolean isBranch = false;
+
+  Boid(float x, float y, float z, int _type) {
     acc = new Vec3D(0, 0, 0);
-    vel = new Vec3D(random(TWO_PI), random(TWO_PI), random(TWO_PI));
+    vel = new Vec3D(50, 50, 1);
     pos = new Vec3D(x, y, z);
     r = 7.0;
     maxspeed = 10;
     maxforce = 0.07;
+    type = _type;
   }
 
   void run(ArrayList<Boid> boids) {
     flock(boids);
     if (frameCount%1==0) trail();
-    if (frameCount%3==0) Print();
+    if ((type == 2) &&(frameCount%3==0)) Print();
     update();
     borders();
     render();
@@ -34,13 +41,17 @@ class Boid {
     //Vec3D ali = align(boids);      
     //Vec3D coh = cohesion(boids);
     Vec3D wan = wander();
+    Vec3D senode = seekNode(nodePop);
+    Vec3D sebranch = seekBranch(nodePop);
     //Vec3D stig = seektrail(flock.trailPop);
 
     //sep.scaleSelf(3.0);
     //ali.scaleSelf(0.6);
     // coh.scaleSelf(0.1);
     //stig.scaleSelf(0.5);
-    wan.scaleSelf(9.0);
+    wan.scaleSelf(1.0);
+    senode.scaleSelf(20.0);
+    sebranch.scaleSelf(10.0);
 
 
 
@@ -49,6 +60,8 @@ class Boid {
     //applyForce(coh);
     //applyForce(stig);
     applyForce(wan);
+    if (type==5)applyForce(senode);
+    if (type==2)applyForce(sebranch);
   }
 
 
@@ -73,8 +86,8 @@ class Boid {
     trail tr = new trail(pos.copy(), vel.copy());
     flock.addTrail(tr);
   }
-  
-   void Print() {
+
+  void Print() {
     printed tr = new printed(pos.copy(), vel.copy());
     flock.addPrint(tr);
   }
@@ -87,7 +100,8 @@ class Boid {
     translate(pos.x, pos.y, pos.z);
     rotate(theta);
     lights();
-    obj.setFill(color(250, 250, 250));
+    if (type == 5)obj.setFill(color(250, 250, 250));
+    if (type == 2)obj.setFill(color(200, 200, 200));
     obj.setStroke(100);
     obj.scale(1);
     shape(obj);
@@ -214,6 +228,139 @@ class Boid {
     }
     return resultBool;
   }
+
+  Vec3D rotateVector(Vec3D v, float angle, Vec3D axis) {
+    Vec3D vRotated = v.copy();
+    float rad =  radians((angle));
+    vRotated.rotateAroundAxis(axis, rad);
+    return vRotated;
+  }
+
+
+
+  Vec3D seekNode(ArrayList nodeList) {
+    float closestAttDist = 900000000;
+    float closestAttHight = 900000000;
+    float closestAttNumber2 = 900000000;
+    int closestAtt = 0;
+    Vec3D attVec = new Vec3D(0, 0, 0);
+    if (nodeList.isEmpty() == false) {
+      for (int i = 0; i<nodeList.size(); i++) {
+        node att = (node) nodeList.get(i);
+        Vec3D attTarget = att.pos.copy();
+        float attDist = attTarget.distanceToSquared(pos); 
+        if ((attDist<500*500)&&(att.nodeval<nodetp)) {
+          if ((att.pos.z < closestAttHight)&&(attDist<closestAttDist)) {
+            closestAttHight = att.pos.z;
+            closestAttDist = attDist;
+            float closestAttNumber = closestAttHight+closestAttDist;
+            if (closestAttNumber<closestAttNumber2) {
+              closestAttNumber2 = closestAttNumber;
+              closestAtt = i;
+            }
+          }
+        }
+      }
+
+      node att = (node) nodeList.get(closestAtt);
+
+      att.type =2;
+
+      Vec3D attTarget = att.pos.copy();
+      float closestAttDist2 = att.pos.copy().distanceTo(pos);
+
+      if ((closestAttDist2 < 500)) {
+        attVec = seek(attTarget);
+      }
+      if ((closestAttDist2 > 500)) {
+        type=5;
+        att.type =2;
+      }
+
+
+      if ((closestAttDist2<50)&&(type==5)) {
+        att.type=3;
+        att.nodeval ++;
+        type=2;      
+
+        //if ((att.nodeval >=1)) {
+        //  if (random(2)<1) {
+        //    attVec = rotateVector(attVec, 60, new Vec3D(0, 0, 1));
+        //    attVec = attVec.scaleSelf(3);
+        //  }
+        //  if (random(2)>1) {
+        //    attVec = rotateVector(attVec, -60, new Vec3D(0, 0, 1));
+        //    attVec = attVec.scaleSelf(3);
+        //  }
+        //}
+      } //else type = 5;
+    }
+    return attVec;
+  }
+
+  Vec3D seekBranch(ArrayList nodeList) {
+
+    float closestAttDist = 900000000;
+    int closestAtt = 0;
+    Vec3D attVec = new Vec3D(0, 0, 0);
+    if (type!=5) {
+      if (nodeList.isEmpty() == false) {
+        for (int i = 0; i<nodeList.size(); i++) {
+          node att = (node) nodeList.get(i);
+          Vec3D attTarget = att.pos.copy();
+          float attDist = attTarget.distanceToSquared(pos);
+          if ((attDist < closestAttDist)&&(att.branchval<nodebt)) {
+            closestAttDist = attDist;
+            closestAtt = i;
+          }
+        }
+        node att = (node) nodeList.get(closestAtt);
+        att.type = 4;
+
+        if (Float.isNaN(att.pos.z)) {
+          type = 5;
+        }
+        if (!Float.isNaN(att.pos.z)) {
+          float closestAttDist2 = att.pos.copy().distanceTo(pos);
+          Vec3D attTarget = att.pos.copy();
+          attVec = seek(attTarget);
+
+          if (closestAttDist2>1500) {
+            type=5;
+          }
+          if ((closestAttDist2<30)&&(type!=5)) {
+            att.type = 3;
+            branchCntr++;
+            att.branchval ++;
+            if (branchCntr<2) {
+              att.nodeval ++;
+            }
+
+            if (branchCntr==2) {
+              branchCntr=0;
+              type = 5;
+            }
+            if ((att.branchval >=1)) {
+              if (random(2)<1) {
+                Vec3D a1 = rotateVector(attVec, 60, new Vec3D(0, 0, 1));
+                attVec = a1.scaleSelf(3);
+              }
+              if (random(2)>1) {
+                Vec3D b1 = rotateVector(attVec, -60, new Vec3D(0, 0, 1));
+                attVec = b1.scaleSelf(3);
+              }
+            }
+          }
+        } //else type =5;
+      }
+    }
+
+    return attVec;
+  }
+
+
+
+
 
   // Wraparound
   void borders() {
